@@ -1,5 +1,7 @@
 import { request, gql } from 'graphql-request';
 
+const LEETCODE_API = 'https:/leetcode.com/graphql';
+
 const problemsSolvedQuery = gql`
   query userProblemsSolved($username: String!) {
     matchedUser(username: $username) {
@@ -24,21 +26,31 @@ const recentSubmissionsQuery = gql`
   }
 `;
 
-const difficultyQuery = gql`
-  query getQuestionDetail($titleSlug: String!) {
-    question(titleSlug: $titleSlug) {
-      difficulty
-    }
+const difficultyFragment = (submission) => gql`
+  ${snakeize(submission.titleSlug)}: question(titleSlug: "${submission.titleSlug}") {
+    difficulty
   }
 `;
 
+async function getSubmissionDifficulties(submissions) {
+  if (submissions.length == 0) { return submissions; }
+
+  const difficultyQuery = '{' + submissions.map(s => difficultyFragment(s)).join("") + '}'
+  const difficultyMap = await request(LEETCODE_API, difficultyQuery);
+  return submissions.map(s => ({ ...s, ...difficultyMap[snakeize(s.titleSlug)] }));
+}
+
 export async function getSubmissionsToday() {
-  const variables = { username: 'hermanwongkmwork' };
-  const response = await request('https:/leetcode.com/graphql', recentSubmissionsQuery, variables);
+  const response = await request(LEETCODE_API, recentSubmissionsQuery, { username: 'hermanwongkmwork' });
 
   const startOfDay = new Date();
   startOfDay.setHours(0,0,0,0);
   const startTimestamp = startOfDay.getTime() / 1000
-  return response.recentAcSubmissionList
-    .filter((submission => submission.timestamp >= startTimestamp));
+  const submissions = response.recentAcSubmissionList
+    // .filter((submission => submission.timestamp >= startTimestamp));
+  return getSubmissionDifficulties(submissions);
+}
+
+function snakeize(identifier) {
+  return identifier.replaceAll('-', '_')
 }
