@@ -18,7 +18,7 @@ variable "TELEGRAM_BOT_TOKEN" {}
 data "archive_file" "lambda_zip" {
   type          = "zip"
   source_dir    = "${path.module}"
-  excludes      = [".terraform", ".git"]
+  excludes      = [".terraform", ".git", "lambda_function.zip"]
   output_path   = "${path.module}/lambda_function.zip"
 }
 
@@ -59,7 +59,8 @@ resource "aws_lambda_function" "telegram_bot" {
 
   environment {
     variables = {
-      TELEGRAM_BOT_TOKEN = var.TELEGRAM_BOT_TOKEN
+      TELEGRAM_BOT_TOKEN             = var.TELEGRAM_BOT_TOKEN
+      GOOGLE_APPLICATION_CREDENTIALS = "./gcloud_key.json"
     }
   }
 }
