@@ -32,23 +32,22 @@ const difficultyFragment = (submission) => gql`
   }
 `;
 
-async function getSubmissionDifficulties(submissions) {
+export async function getSubmissionDifficulties(submissions) {
   if (submissions.length == 0) { return submissions; }
 
   const difficultyQuery = '{' + submissions.map(s => difficultyFragment(s)).join("") + '}'
   const difficultyMap = await request(LEETCODE_API, difficultyQuery);
-  return submissions.map(s => ({ ...s, ...difficultyMap[snakeize(s.titleSlug)] }));
+  submissions.forEach(s => s.difficulty = difficultyMap[snakeize(s.titleSlug)].difficulty);
 }
 
-export async function getSubmissionsToday() {
-  const response = await request(LEETCODE_API, recentSubmissionsQuery, { username: 'hermanwongkmwork' });
+export async function getSubmissionsToday(username) {
+  const response = await request(LEETCODE_API, recentSubmissionsQuery, { username });
 
   const startOfDay = new Date();
   startOfDay.setHours(0,0,0,0);
   const startTimestamp = startOfDay.getTime() / 1000
-  const submissions = response.recentAcSubmissionList
-    // .filter((submission => submission.timestamp >= startTimestamp));
-  return getSubmissionDifficulties(submissions);
+  return response.recentAcSubmissionList
+    .filter((submission => submission.timestamp >= startTimestamp));
 }
 
 function snakeize(identifier) {
