@@ -14,6 +14,7 @@ provider "aws" {
 }
 
 variable "TELEGRAM_BOT_TOKEN" {}
+variable "TELEGRAM_CHAT_ID" {}
 
 data "archive_file" "lambda_zip" {
   type          = "zip"
@@ -46,10 +47,9 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
-
-resource "aws_lambda_function" "telegram_bot" {
+resource "aws_lambda_function" "telegram_bot_webhook" {
   filename      = data.archive_file.lambda_zip.output_path
-  function_name = "telegram_bot"
+  function_name = "telegram_bot_webhook"
   role          = aws_iam_role.telegram_bot.arn
   handler       = "index.handler"
 
@@ -66,10 +66,28 @@ resource "aws_lambda_function" "telegram_bot" {
 }
 
 resource "aws_lambda_function_url" "webhook_url" {
-  function_name      = aws_lambda_function.telegram_bot.function_name
+  function_name      = aws_lambda_function.telegram_bot_webhook.function_name
   authorization_type = "NONE"
 }
 
 output "aws_lambda_function_url" {
   value       = aws_lambda_function_url.webhook_url.function_url
+}
+
+resource "aws_lambda_function" "telegram_daily_leetcode" {
+  filename      = data.archive_file.lambda_zip.output_path
+  function_name = "telegram_daily_leetcode"
+  role          = aws_iam_role.telegram_bot.arn
+  handler       = "dailyLeetcode.handler"
+
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  runtime = "nodejs14.x"
+
+  environment {
+    variables = {
+      TELEGRAM_BOT_TOKEN = var.TELEGRAM_BOT_TOKEN
+      TELEGRAM_CHAT_ID   = var.TELEGRAM_CHAT_ID
+    }
+  }
 }

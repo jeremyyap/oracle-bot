@@ -18,10 +18,6 @@ const displayNames = {
   sturdek: 'KC'
 };
 
-const variables = {
-  username: 'hermanwongkmwork'
-};
-
 const problemURL = (titleSlug) => `https://leetcode.com/problems/${titleSlug}`;
 const difficulty = (problem) => {
   switch(problem.difficulty) {
@@ -33,14 +29,20 @@ const difficulty = (problem) => {
 }
 const formatSubmission = (s) => `[${difficulty(s)}](${problemURL(s.titleSlug)})`;
 
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+export async function handler(event) {
+  try {
+    const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
-const usersSubmissions = await Promise.all(usernames.map(username => getSubmissionsToday(username)));
-await getSubmissionDifficulties(usersSubmissions.flat());
+    const usersSubmissions = await Promise.all(usernames.map(username => getSubmissionsToday(username)));
+    await getSubmissionDifficulties(usersSubmissions.flat());
 
-const message = '*LeetCode Submissions Today*\n\n' + usernames.map((username, i) => {
-  const submissions = usersSubmissions[i];
-  return `${displayNames[username]}\n${submissions.map(s => formatSubmission(s))}\n`;
-}).join('\n');
+    const message = '*LeetCode Submissions Today*\n\n' + usernames.map((username, i) => {
+      const submissions = usersSubmissions[i];
+      return `${displayNames[username]}\n${submissions.map(s => formatSubmission(s))}\n`;
+    }).join('\n');
 
-bot.telegram.sendMessage(process.env.TELEGRAM_CHAT_ID, message, { parse_mode: 'MarkdownV2', disable_web_page_preview: true });
+    await bot.telegram.sendMessage(process.env.TELEGRAM_CHAT_ID, message, { parse_mode: 'MarkdownV2', disable_web_page_preview: true });
+  } catch (err) {
+    console.error(err);
+  }
+}
