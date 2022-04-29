@@ -40,12 +40,11 @@ export async function getSubmissionDifficulties(submissions) {
   submissions.forEach(s => s.difficulty = difficultyMap[snakeize(s.titleSlug)].difficulty);
 }
 
-export async function getSubmissionsToday(username) {
+export async function getSubmissionsLast24Hours(username) {
   const response = await request(LEETCODE_API, recentSubmissionsQuery, { username });
 
-  const startOfDay = new Date();
-  startOfDay.setHours(0,0,0,0);
-  const startTimestamp = startOfDay.getTime() / 1000
+  const startTime = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+  const startTimestamp = startTime.getTime() / 1000
   return response.recentAcSubmissionList
     .filter((submission => submission.timestamp >= startTimestamp));
 }

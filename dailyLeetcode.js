@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { Telegraf } from 'telegraf';
-import { getSubmissionsToday, getSubmissionDifficulties } from './leetcode.js';
+import { getSubmissionsLast24Hours, getSubmissionDifficulties } from './leetcode.js';
 
 dotenv.config();
 
@@ -33,7 +33,7 @@ export async function handler(event) {
   try {
     const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
-    const usersSubmissions = await Promise.all(usernames.map(username => getSubmissionsToday(username)));
+    const usersSubmissions = await Promise.all(usernames.map(username => getSubmissionsLast24Hours(username)));
     await getSubmissionDifficulties(usersSubmissions.flat());
 
     const message = '*LeetCode Submissions Today*\n\n' + usernames.map((username, i) => {
