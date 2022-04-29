@@ -38,7 +38,7 @@ export async function handler(event) {
 
     const message = '*LeetCode Submissions Today*\n\n' + usernames.map((username, i) => {
       const submissions = usersSubmissions[i];
-      return `${displayNames[username]}\n${submissions.map(s => formatSubmission(s))}\n`;
+      return `${displayNames[username]}\n${submissions.map(s => formatSubmission(s)).join("")}\n`;
     }).join('\n');
 
     await bot.telegram.sendMessage(process.env.TELEGRAM_CHAT_ID, message, { parse_mode: 'MarkdownV2', disable_web_page_preview: true });

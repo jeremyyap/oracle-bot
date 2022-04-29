@@ -50,5 +50,5 @@ export async function getSubmissionsLast24Hours(username) {
 }
 
 function snakeize(identifier) {
-  return identifier.replaceAll('-', '_')
+  return identifier.replace(/-/g, '_');
 }
