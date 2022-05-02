@@ -91,3 +91,14 @@ resource "aws_lambda_function" "telegram_daily_leetcode" {
     }
   }
 }
+
+resource "aws_cloudwatch_event_rule" "every_10PM" {
+  name = "every-10-pm"
+  description = "Fires every day at 10 PM"
+  schedule_expression = "cron(0 14 * * ? *)"
+}
+
+resource "aws_cloudwatch_event_target" "leetcode_stats_every_10PM" {
+  rule = "${aws_cloudwatch_event_rule.every_10PM.name}"
+  arn = "${aws_lambda_function.telegram_daily_leetcode.arn}"
+}
