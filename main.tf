@@ -44,7 +44,7 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
   role       = aws_iam_role.telegram_bot.id
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_lambda_function" "telegram_bot_webhook" {
@@ -101,4 +101,12 @@ resource "aws_cloudwatch_event_rule" "every_10PM" {
 resource "aws_cloudwatch_event_target" "leetcode_stats_every_10PM" {
   rule = "${aws_cloudwatch_event_rule.every_10PM.name}"
   arn = "${aws_lambda_function.telegram_daily_leetcode.arn}"
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_to_call_daily_leetcode" {
+  statement_id = "AllowExecutionFromCloudWatch"
+  action = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.telegram_daily_leetcode.function_name
+  principal = "events.amazonaws.com"
+  source_arn = aws_cloudwatch_event_rule.every_10PM.arn
 }
