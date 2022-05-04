@@ -66,5 +66,5 @@ export async function getSubmissionsLast24Hours(usernames) {
 }
 
 function snakeize(identifier) {
-  return identifier.replace(/-/g, '_');
+  return '_' + identifier.replace(/-/g, '_');
 }
