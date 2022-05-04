@@ -33,18 +33,19 @@ export async function handler(event) {
   try {
     const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
-    const usersSubmissions = await Promise.all(usernames.map(username => getSubmissionsLast24Hours(username)));
-
+    const usersSubmissions = await getSubmissionsLast24Hours(usernames);
+    console.log(usersSubmissions);
     let message = "No submission data found. Either everyone is slacking or LeetCode API is down again.";
-    if (usersSubmissions.some(submissions => submissions.length > 0)) {
-      await getSubmissionDifficulties(usersSubmissions.flat());
 
-      message = '*LeetCode Submissions Today*\n\n' + usernames.map((username, i) => {
-        const submissions = usersSubmissions[i];
+    if (Object.values(usersSubmissions).some(submissions => submissions.length > 0)) {
+      console.log(Object.values(usersSubmissions).flat());
+      await getSubmissionDifficulties(Object.values(usersSubmissions).flat());
+
+      message = '*LeetCode Submissions Today*\n\n' + usernames.map((username) => {
+        const submissions = usersSubmissions[username];
         return `${displayNames[username]}\n${submissions.map(s => formatSubmission(s)).join("")}\n`;
       }).join('\n');
     }
-
     await bot.telegram.sendMessage(process.env.TELEGRAM_CHAT_ID, message, { parse_mode: 'MarkdownV2', disable_web_page_preview: true });
   } catch (err) {
     console.error(err);

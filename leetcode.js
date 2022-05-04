@@ -26,6 +26,15 @@ const recentSubmissionsQuery = gql`
   }
 `;
 
+const submissionsFragment = (username) => gql`
+  ${username}: recentAcSubmissionList(username: "${username}", limit: 20) {
+    id
+    title
+    titleSlug
+    timestamp
+  }
+`;
+
 const difficultyFragment = (submission) => gql`
   ${snakeize(submission.titleSlug)}: question(titleSlug: "${submission.titleSlug}") {
     difficulty
@@ -35,18 +44,22 @@ const difficultyFragment = (submission) => gql`
 export async function getSubmissionDifficulties(submissions) {
   if (submissions.length == 0) { return submissions; }
 
-  const difficultyQuery = '{' + submissions.map(s => difficultyFragment(s)).join("") + '}'
-  const difficultyMap = await request(LEETCODE_API, difficultyQuery);
+  const difficultyQuery = '{' + submissions.map(s => difficultyFragment(s)).join("") + '}';
+  const difficultyMap = await request(LEETCODE_API, difficultyQuery, {});
   submissions.forEach(s => s.difficulty = difficultyMap[snakeize(s.titleSlug)].difficulty);
 }
 
-export async function getSubmissionsLast24Hours(username) {
-  const response = await request(LEETCODE_API, recentSubmissionsQuery, { username });
+export async function getSubmissionsLast24Hours(usernames) {
+  const recentSubmissionsQuery = '{' + usernames.map(u => submissionsFragment(u)).join("") + '}';
+  const response = await request(LEETCODE_API, recentSubmissionsQuery);
 
   const startTime = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
   const startTimestamp = startTime.getTime() / 1000
-  return response.recentAcSubmissionList
-    .filter((submission => submission.timestamp >= startTimestamp));
+  return Object.fromEntries(
+    Object.entries(response).map(
+      ([k, submissions]) => [k, submissions.filter(s => s.timestamp >= startTimestamp)]
+    )
+  );
 }
 
 function snakeize(identifier) {
