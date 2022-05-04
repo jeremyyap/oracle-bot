@@ -35,17 +35,20 @@ const submissionsFragment = (username) => gql`
   }
 `;
 
-const difficultyFragment = (submission) => gql`
-  ${snakeize(submission.titleSlug)}: question(titleSlug: "${submission.titleSlug}") {
+const difficultyFragment = (titleSlug) => gql`
+  ${snakeize(titleSlug)}: question(titleSlug: "${titleSlug}") {
     difficulty
   }
 `;
 
-export async function getSubmissionDifficulties(submissions) {
-  if (submissions.length == 0) { return submissions; }
+export async function getQuestionDifficulties(submissions) {
+  if (submissions.length == 0) { return; }
 
-  const difficultyQuery = '{' + submissions.map(s => difficultyFragment(s)).join("") + '}';
+  const titleSlugs = submissions.map(s => s.titleSlug);
+  const uniqueSlugs = [...new Set(titleSlugs)];
+  const difficultyQuery = '{' + uniqueSlugs.map(s => difficultyFragment(s)).join("") + '}';
   const difficultyMap = await request(LEETCODE_API, difficultyQuery, {});
+
   submissions.forEach(s => s.difficulty = difficultyMap[snakeize(s.titleSlug)].difficulty);
 }
 

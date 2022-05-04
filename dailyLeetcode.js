@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { Telegraf } from 'telegraf';
-import { getSubmissionsLast24Hours, getSubmissionDifficulties } from './leetcode.js';
+import { getSubmissionsLast24Hours, getQuestionDifficulties } from './leetcode.js';
 
 dotenv.config();
 
@@ -34,12 +34,11 @@ export async function handler(event) {
     const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
     const usersSubmissions = await getSubmissionsLast24Hours(usernames);
-    console.log(usersSubmissions);
     let message = "No submission data found. Either everyone is slacking or LeetCode API is down again.";
 
-    if (Object.values(usersSubmissions).some(submissions => submissions.length > 0)) {
-      console.log(Object.values(usersSubmissions).flat());
-      await getSubmissionDifficulties(Object.values(usersSubmissions).flat());
+    const allSubmissions = Object.values(usersSubmissions).flat();
+    if (allSubmissions.length > 0) {
+      await getQuestionDifficulties(allSubmissions);
 
       message = '*LeetCode Submissions Today*\n\n' + usernames.map((username) => {
         const submissions = usersSubmissions[username];
