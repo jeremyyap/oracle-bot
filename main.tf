@@ -52,7 +52,7 @@ resource "aws_lambda_function" "telegram_bot_webhook" {
   function_name = "telegram_bot_webhook"
   role          = aws_iam_role.telegram_bot.arn
   handler       = "index.handler"
-  timeout       = 5
+  timeout       = 10
 
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
@@ -80,7 +80,7 @@ resource "aws_lambda_function" "telegram_daily_leetcode" {
   function_name = "telegram_daily_leetcode"
   role          = aws_iam_role.telegram_bot.arn
   handler       = "dailyLeetcode.handler"
-  timeout       = 5
+  timeout       = 10
 
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
