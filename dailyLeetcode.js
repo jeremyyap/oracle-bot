@@ -40,7 +40,9 @@ export async function handler(event) {
     if (allSubmissions.length > 0) {
       await getQuestionDifficulties(allSubmissions);
 
-      message = '*LeetCode Submissions Today*\n\n' + usernames.map((username) => {
+      message = '*LeetCode Submissions Today*\n\n' + usernames
+        .filter(username => usersSubmissions[username].length > 0)
+        .map(username => {
         const submissions = usersSubmissions[username];
         return `${displayNames[username]}\n${submissions.map(s => formatSubmission(s)).join("")}\n`;
       }).join('\n');
