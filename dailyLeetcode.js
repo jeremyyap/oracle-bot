@@ -34,7 +34,7 @@ export async function handler(event) {
     const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
     const usersSubmissions = await getSubmissionsLast24Hours(usernames);
-    let message = "No submission data found. Either everyone is slacking or LeetCode API is down again.";
+    let message = "No submission data found\\. Either everyone is slacking or LeetCode API is down again\\.";
 
     const allSubmissions = Object.values(usersSubmissions).flat();
     if (allSubmissions.length > 0) {
