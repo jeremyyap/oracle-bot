@@ -47,6 +47,7 @@ export async function getQuestionDifficulties(submissions) {
   const titleSlugs = submissions.map(s => s.titleSlug);
   const uniqueSlugs = [...new Set(titleSlugs)];
   const difficultyQuery = '{' + uniqueSlugs.map(s => difficultyFragment(s)).join("") + '}';
+  console.log(difficultyQuery);
   const difficultyMap = await request(LEETCODE_API, difficultyQuery, {});
 
   submissions.forEach(s => s.difficulty = difficultyMap[snakeize(s.titleSlug)].difficulty);
@@ -54,6 +55,7 @@ export async function getQuestionDifficulties(submissions) {
 
 export async function getSubmissionsLast24Hours(usernames) {
   const recentSubmissionsQuery = '{' + usernames.map(u => submissionsFragment(u)).join("") + '}';
+  console.log(recentSubmissionsQuery);
   const response = await request(LEETCODE_API, recentSubmissionsQuery);
 
   const startTime = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
