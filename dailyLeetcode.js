@@ -4,18 +4,12 @@ import { getSubmissionsLast24Hours, getQuestionDifficulties } from './leetcode.j
 
 dotenv.config();
 
-const usernames = [
-  'hermanwongkmwork',
-  'jeremyyap',
-  'saiful_shahril',
-  'sturdek'
-];
-
 const displayNames = {
   hermanwongkmwork: 'Herman',
   jeremyyap: 'Jeremy',
+  liang6735: 'JJ',
   saiful_shahril: 'Saiful',
-  sturdek: 'KC'
+  sturdek: 'KC',
 };
 
 const problemURL = (titleSlug) => `https://leetcode.com/problems/${titleSlug}`;
@@ -33,14 +27,14 @@ export async function handler(event) {
   try {
     const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
-    const usersSubmissions = await getSubmissionsLast24Hours(usernames);
+    const usersSubmissions = await getSubmissionsLast24Hours(Object.keys(displayNames));
     let message = "No submission data found\\. Either everyone is slacking or LeetCode API is down again\\.";
 
     const allSubmissions = Object.values(usersSubmissions).flat();
     if (allSubmissions.length > 0) {
       await getQuestionDifficulties(allSubmissions);
 
-      message = '*LeetCode Submissions Today*\n\n' + usernames
+      message = '*LeetCode Submissions Today*\n\n' + Object.keys(displayNames)
         .filter(username => usersSubmissions[username].length > 0)
         .map(username => {
         const submissions = usersSubmissions[username];
